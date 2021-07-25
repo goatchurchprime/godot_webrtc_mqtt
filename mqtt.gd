@@ -183,7 +183,7 @@ func publish(topic, msg, retain=false, qos=0):
 	# Must be an easier way of doing this...
 	pkt.append(0x30);
 	pkt.append(0x00);
-
+		
 	pkt[0] |= ((1<<1) if qos else 0) | (1 if retain else 0)
 	var sz = 2 + len(topic) + len(msg)
 	if qos > 0:
@@ -194,6 +194,8 @@ func publish(topic, msg, retain=false, qos=0):
 		pkt[i] = (sz & 0x7f) | 0x80
 		sz >>= 7
 		i += 1
+		if i + 1 > len(pkt):
+			pkt.append(0x00);
 	pkt[i] = sz
 	
 	pkt.append(topic.length() >> 8)

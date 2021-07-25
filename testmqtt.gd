@@ -5,6 +5,7 @@ extends Node
 var uniqstring
 var topicstem
 
+
 func _ready():
 	uniqstring = OS.get_unique_id().replace("{", "").split("-")[0].to_upper().substr(0,4)
 	print(uniqstring)
