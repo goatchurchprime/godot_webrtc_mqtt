@@ -1,24 +1,55 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://mqtt.gd" type="Script" id=1]
-[ext_resource path="res://testmqtt.gd" type="Script" id=2]
 [ext_resource path="res://Control.gd" type="Script" id=3]
 
 [node name="Control" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+margin_top = 7.62939e-06
 script = ExtResource( 3 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="MQTTExperiment" type="Node" parent="."]
-script = ExtResource( 2 )
+[node name="PingButton" type="Button" parent="."]
+margin_left = 197.867
+margin_top = 47.5867
+margin_right = 283.867
+margin_bottom = 67.5867
+text = "Ping"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
-[node name="mqttnode" type="Node" parent="MQTTExperiment"]
+[node name="metopic" type="OptionButton" parent="."]
+anchor_right = 0.028
+anchor_bottom = 0.017
+margin_left = 49.2704
+margin_top = 8.37759
+margin_right = 145.598
+margin_bottom = 18.1776
+text = "webrtc/121212/"
+items = [ "webrtc/121212/", null, false, 0, null, "webrtc/131313/", null, false, 1, null ]
+selected = 0
+
+[node name="SetMeTopic" type="Button" parent="."]
+margin_left = 195.98
+margin_top = 9.8316
+margin_right = 281.98
+margin_bottom = 29.8316
+toggle_mode = true
+text = "SetMeTopic"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="mqttnode" type="Node" parent="."]
 script = ExtResource( 1 )
 
-[node name="Timer" type="Timer" parent="MQTTExperiment/mqttnode"]
+[node name="Timer" type="Timer" parent="mqttnode"]
 wait_time = 0.17
 
-[connection signal="timeout" from="MQTTExperiment/mqttnode/Timer" to="MQTTExperiment/mqttnode" method="_on_Timer_timeout"]
+[connection signal="pressed" from="PingButton" to="." method="_on_PingButton_pressed"]
+[connection signal="toggled" from="SetMeTopic" to="." method="_on_SetMeTopic_toggled"]
+[connection signal="timeout" from="mqttnode/Timer" to="mqttnode" method="_on_Timer_timeout"]
