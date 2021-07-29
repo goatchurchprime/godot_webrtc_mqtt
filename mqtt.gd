@@ -116,22 +116,22 @@ func connect_to_server(clean_session=true):
 	assert (server != "")
 	if client_id == "":
 		client_id = "rr%d" % randi()
-	var lclient = StreamPeerTCP.new()
-	lclient.set_no_delay(true)
-	lclient.set_big_endian(true)
+	socket = StreamPeerTCP.new()
+	socket.set_no_delay(true)
+	socket.set_big_endian(true)
 	print("Connecting to %s:%s" % [self.server, self.port])
-	lclient.connect_to_host(self.server, self.port)
+	socket.connect_to_host(self.server, self.port)
 #	if self.ssl:
 #		import ussl
 #		self.socket = ussl.wrap_socket(self.socket, **self.ssl_params)
 	
 	var timestep = 0.2
-	while not lclient.is_connected_to_host():
+	while not socket.is_connected_to_host():
 		yield(get_tree().create_timer(timestep), "timeout")
 		timeout -= timestep
 		if timeout < 0:
 			return false
-	while lclient.get_status() != StreamPeerTCP.STATUS_CONNECTED:
+	while socket.get_status() != StreamPeerTCP.STATUS_CONNECTED:
 		yield(get_tree().create_timer(timestep), "timeout")
 		timeout -= timestep
 		if timeout < 0:
@@ -183,11 +183,11 @@ func connect_to_server(clean_session=true):
 		msg.append(self.pswd.length() >> 8)
 		msg.append(self.pswd.length() & 0xFF)
 		msg.append_array(self.pswd.to_ascii())
-	lclient.put_data(msg)
+	socket.put_data(msg)
 	
-	var ret = yield(get_data_bytes_async(4, lclient), "completed")
+	var ret = yield(get_data_bytes_async(4), "completed")
 	if ret == null:
-		self.socket = null
+		socket = null
 		return false
 		
 	var error = ret[0]
@@ -198,7 +198,6 @@ func connect_to_server(clean_session=true):
 		print("MQTT exception ", data[3])
 		return false
 
-	self.socket = lclient
 	#return data[2] & 1
 	return true
 
