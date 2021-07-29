@@ -1,5 +1,11 @@
 extends Control
 
+# We need to name the things me and other,
+# Possibly dynamically name and subscribe without the dropdowns
+# localname and remotename, topic subscribing and diagrams
+# Make a websocket version of the mqtt, so it can deploy
+# Once press button (then disable it)
+# comment on the flow, and include mosquitto_sub commands
 
 var peer = WebRTCPeerConnection.new()
 var datachannel = null
@@ -20,10 +26,9 @@ func _on_SetMeTopic_toggled(button_pressed):
 		othertopic = $metopic.get_item_text(1-$metopic.selected)
 		print("Metopic: ", metopic, " othertopic: ", othertopic)		
 
-		var uniqstring = OS.get_unique_id().replace("{", "").split("-")[0].to_upper().substr(0,4)
 		$mqttnode.server = "mosquitto.doesliverpool.xyz"
 		randomize()
-		$mqttnode.client_id = "u%s%da%d"%[uniqstring, int(metopic), randi()]
+		$mqttnode.client_id = "u%da%d"%[int(metopic), randi()]
 		print("MQTT client_id:", $mqttnode.client_id)
 		$mqttnode.set_last_will(metopic+"status", "stopped", true)
 		if yield($mqttnode.connect_to_server(), "completed"):

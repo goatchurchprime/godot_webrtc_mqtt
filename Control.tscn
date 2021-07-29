@@ -4,19 +4,21 @@
 [ext_resource path="res://Control.gd" type="Script" id=3]
 
 [node name="Control" type="Control"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_top = 7.62939e-06
+anchor_right = 0.46
+anchor_bottom = 0.265
+margin_left = 1.0
+margin_right = -0.0400085
+margin_bottom = -1.52588e-05
 script = ExtResource( 3 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="PingButton" type="Button" parent="."]
-margin_left = 197.867
-margin_top = 47.5867
-margin_right = 283.867
-margin_bottom = 67.5867
+margin_left = 313.237
+margin_top = 13.1256
+margin_right = 399.237
+margin_bottom = 33.1256
 text = "Ping"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -47,9 +49,5 @@ __meta__ = {
 [node name="mqttnode" type="Node" parent="."]
 script = ExtResource( 1 )
 
-[node name="Timer" type="Timer" parent="mqttnode"]
-wait_time = 0.17
-
 [connection signal="pressed" from="PingButton" to="." method="_on_PingButton_pressed"]
 [connection signal="toggled" from="SetMeTopic" to="." method="_on_SetMeTopic_toggled"]
-[connection signal="timeout" from="mqttnode/Timer" to="mqttnode" method="_on_Timer_timeout"]

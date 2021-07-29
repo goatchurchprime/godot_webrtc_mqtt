@@ -1,21 +1,11 @@
 extends Node
 
-# Copyright (c) 2019, Pycom Limited.
-# Some parts copyright (c) 2020, Dynamic Devices Ltd
+# MQTT client implementation in GDScript
+# Based on https://github.com/pycom/pycom-libraries/blob/master/lib/mqtt/mqtt.py
+# and initial work by Alex J Lennon <ajlennon@dynamicdevices.co.uk>
 
-# This software is licensed under the GNU GPL version 3 or any
-# later version, with permitted additional terms. For more information
-# see the Pycom Licence v1.0 document supplied with this file, or
-# available at https://www.pycom.io/opensource/licensing
-#
-#
-# Ported to gdscript by Alex J Lennon <ajlennon@dynamicdevices.co.uk>
-# from https://github.com/pycom/pycom-libraries/blob/master/lib/mqtt/mqtt.py
-#
-# - ssl not implemented yet
-# - qos 1,2 may not work
-#
-# Code should be considered ALPHA
+# mosquitto_sub -h test.mosquitto.org -v -t "metest/#"
+# mosquitto_pub -h test.mosquitto.org -t "metest/retain" -m "retained message" -r
 
 export var server = "test.mosquitto.org"
 export var port = 1883
@@ -23,6 +13,7 @@ export var client_id = ""
 
 var socket = null
 var websocket = null
+var receivedbuffer = PoolByteArray()
 
 var ssl = false
 var ssl_params = null
@@ -73,7 +64,6 @@ func _ready():
 		randomize()
 		client_id = str(randi())
 
-
 	if get_name() == "test_mqtt1":
 		websocketexperiment()
 		
@@ -86,11 +76,8 @@ func _ready():
 			publish(metopic+"status", "connected", true)
 		else:
 			print("mqtt failed to connect")
-
-	#$mqttnode.connect("received_message", self, "received_mqtt")
-	#$mqttnode.subscribe(metopic+"offer")
-	#$mqttnode.subscribe(metopic+"answer")
-	#$mqttnode.subscribe(metopic+"ice")
+		connect("received_message", self, "received_mqtt")
+		subscribe(metopic+"retain")
 
 func _recv_len():
 	var n = 0
@@ -352,6 +339,7 @@ func wait_msg():
 	var msg = ret[1].get_string_from_ascii()
 	
 	emit_signal("received_message", topic, msg)
+	print("Received message", [topic, msg])
 	
 #	self.cb(topic, msg)
 	if op & 6 == 2:
