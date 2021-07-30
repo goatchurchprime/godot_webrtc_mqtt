@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=2]
 
-[ext_resource path="res://mqtt.gd" type="Script" id=1]
+[ext_resource path="res://newmqtt.gd" type="Script" id=2]
 [ext_resource path="res://Control.gd" type="Script" id=3]
 
 [node name="Control" type="Control"]
@@ -14,40 +14,221 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="mqttnode" type="Node" parent="."]
+script = ExtResource( 2 )
+
+[node name="roottopic" type="Label" parent="."]
+margin_left = 55.3657
+margin_top = 56.305
+margin_right = 168.366
+margin_bottom = 73.305
+text = "MQTT root topic: "
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LineEdit" type="LineEdit" parent="roottopic"]
+margin_left = 129.617
+margin_top = -7.31639
+margin_right = 274.617
+margin_bottom = 16.6836
+text = "crumble77"
+
+[node name="mqttconnect" type="Button" parent="."]
+margin_left = 440.466
+margin_top = 88.3283
+margin_right = 544.466
+margin_bottom = 108.328
+toggle_mode = true
+text = "MQTT connect"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="mqttbroker" type="Label" parent="."]
+margin_left = 49.5398
+margin_top = 20.3145
+margin_right = 122.54
+margin_bottom = 34.3145
+text = "MQTT host:"
+
+[node name="LineEdit" type="LineEdit" parent="mqttbroker"]
+margin_left = 90.0
+margin_top = -5.0
+margin_right = 245.0
+margin_bottom = 19.0
+text = "test.mosquitto.org"
+
+[node name="usewebsocket" type="CheckBox" parent="mqttbroker"]
+margin_left = 265.364
+margin_top = -5.31319
+margin_right = 401.364
+margin_bottom = 18.6868
+pressed = true
+text = "use websockets"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="local_id" type="Label" parent="."]
+margin_left = 58.6002
+margin_top = 92.575
+margin_right = 114.6
+margin_bottom = 106.575
+text = "Local ID:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="OptionButton" type="OptionButton" parent="local_id"]
+margin_left = 64.6414
+margin_top = -2.48011
+margin_right = 140.641
+margin_bottom = 17.5199
+text = "dog111"
+items = [ "dog111", null, false, 0, null, "cat666", null, false, 1, null ]
+selected = 0
+
+[node name="remote_id" type="Label" parent="."]
+margin_left = 247.163
+margin_top = 92.7551
+margin_right = 324.163
+margin_bottom = 106.755
+text = "Remote ID:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="OptionButton" type="OptionButton" parent="remote_id"]
+margin_left = 80.6185
+margin_top = -3.32101
+margin_right = 163.618
+margin_bottom = 16.679
+disabled = true
+selected = 0
+
+[node name="msg_pub" type="Label" parent="."]
+margin_left = 34.3636
+margin_top = 138.681
+margin_right = 113.364
+margin_bottom = 178.681
+text = "Published
+messages:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TextEdit" type="TextEdit" parent="msg_pub"]
+margin_left = 90.0
+margin_top = -3.0
+margin_right = 530.0
+margin_bottom = 75.0
+text = "..."
+show_line_numbers = true
+
+[node name="msg_sub" type="Label" parent="."]
+margin_left = 32.678
+margin_top = 239.318
+margin_right = 111.678
+margin_bottom = 279.318
+text = "Subscribed
+messages:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TextEdit" type="TextEdit" parent="msg_sub"]
+margin_left = 91.2449
+margin_top = -4.0
+margin_right = 535.245
+margin_bottom = 69.0
+text = "...."
+show_line_numbers = true
+
+[node name="ice_candidates" type="Label" parent="."]
+margin_left = 46.1476
+margin_top = 464.933
+margin_right = 137.148
+margin_bottom = 529.933
+text = "Internet 
+Connectivity
+Establishment
+   candidates:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TextEdit" type="TextEdit" parent="ice_candidates"]
+margin_left = 99.1022
+margin_top = 0.489807
+margin_right = 628.102
+margin_bottom = 73.4898
+text = "...."
+show_line_numbers = true
+
+[node name="local_sdp" type="Label" parent="."]
+margin_left = 41.0
+margin_top = 348.0
+margin_right = 259.0
+margin_bottom = 379.0
+text = "local Session Description Protocol
+"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TextEdit" type="TextEdit" parent="local_sdp"]
+margin_left = -4.63263
+margin_top = 24.1225
+margin_right = 285.367
+margin_bottom = 102.122
+text = "..."
+show_line_numbers = true
+
+[node name="remote_sdp" type="Label" parent="."]
+margin_left = 372.126
+margin_top = 343.51
+margin_right = 590.126
+margin_bottom = 374.51
+text = "remote Session Description Protocol
+"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TextEdit" type="TextEdit" parent="remote_sdp"]
+margin_left = -8.0
+margin_top = 29.7348
+margin_right = 282.0
+margin_bottom = 107.735
+text = "..."
+show_line_numbers = true
+
+[node name="webrtcconnect" type="Button" parent="."]
+margin_left = 269.121
+margin_top = 315.949
+margin_right = 388.121
+margin_bottom = 335.949
+toggle_mode = true
+text = "WebRTC connect"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [node name="PingButton" type="Button" parent="."]
-margin_left = 313.237
-margin_top = 13.1256
-margin_right = 399.237
-margin_bottom = 33.1256
+margin_left = 44.911
+margin_top = 563.674
+margin_right = 130.911
+margin_bottom = 583.674
 text = "Ping"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="metopic" type="OptionButton" parent="."]
-anchor_right = 0.028
-anchor_bottom = 0.017
-margin_left = 49.2704
-margin_top = 8.37759
-margin_right = 145.598
-margin_bottom = 18.1776
-text = "webrtc/121212/"
-items = [ "webrtc/121212/", null, false, 0, null, "webrtc/131313/", null, false, 1, null ]
-selected = 0
-
-[node name="SetMeTopic" type="Button" parent="."]
-margin_left = 195.98
-margin_top = 9.8316
-margin_right = 281.98
-margin_bottom = 29.8316
-toggle_mode = true
-text = "SetMeTopic"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="mqttnode" type="Node" parent="."]
-script = ExtResource( 1 )
+[node name="recdata" type="LineEdit" parent="PingButton"]
+margin_left = 167.0
+margin_top = -1.0
+margin_right = 506.0
+margin_bottom = 23.0
 
 [connection signal="pressed" from="PingButton" to="." method="_on_PingButton_pressed"]
-[connection signal="toggled" from="SetMeTopic" to="." method="_on_SetMeTopic_toggled"]

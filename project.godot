@@ -10,8 +10,8 @@ config_version=4
 
 [application]
 
-config/name="Webrtc Mqtt"
-run/main_scene="res://test_mqtt.tscn"
+config/name="Godot Webrtc MQTT"
+run/main_scene="res://Control.tscn"
 config/icon="res://icon.png"
 
 [gdnative]

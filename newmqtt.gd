@@ -32,6 +32,7 @@ var lw_retain = false
 
 signal received_message(topic, message)
 
+
 var receivedbuffer : PoolByteArray = PoolByteArray()
 
 func receivedbufferlength():
@@ -295,10 +296,18 @@ func websocket_connect_to_server(clean_session=true):
 	in_wait_msg = false
 	return true
 
+func is_connected_to_server():
+	if socket != null and socket.is_connected_to_host():
+		return true
+	if websocket != null and websocket.is_connected_to_host():
+		return true
+	return false
+
 
 func disconnect_from_server():
 	senddata(PoolByteArray([0xE0, 0x00]))
-	socket.disconnect_from_host()
+	if socket != null:
+		socket.disconnect_from_host()
 
 	
 func ping():
