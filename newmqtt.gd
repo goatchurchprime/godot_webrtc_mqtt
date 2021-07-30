@@ -10,9 +10,14 @@ extends Node
 export var server = "test.mosquitto.org"
 export var port = 1883
 export var client_id = ""
-
+#var websocketurl = "ws://node-red.dynamicdevices.co.uk:1880/ws/test"
+var websocketurl = "ws://test.mosquitto.org:8080/mqtt"
+#var websocketurl = "ws://echo.websocket.org"
+	
 var socket = null
+var websocketclient = null
 var websocket = null
+
 
 var ssl = false
 var ssl_params = null
@@ -30,36 +35,54 @@ signal received_message(topic, message)
 var receivedbuffer : PoolByteArray = PoolByteArray()
 
 func receivedbufferlength():
-	return socket.get_available_bytes()
-
+	#return socket.get_available_bytes()
+	return receivedbuffer.size()
+	
 func YreceivedbuffernextNbytes(n):
-	var timeout = 10
-	var timestep = 0.2
 	yield(get_tree(), "idle_frame") 
-	while socket.get_available_bytes() < n:
-		yield(get_tree().create_timer(timestep), "timeout")
-	var sv = socket.get_data(n)
-	assert (sv[0] == 0)  # error
-	return sv[1]
+	while receivedbufferlength() < n:
+		yield(get_tree().create_timer(0.1), "timeout")
+	#var sv = socket.get_data(n)
+	#assert (sv[0] == 0)  # error
+	#return sv[1]
+	var v = receivedbuffer.subarray(0, n-1)
+
+	# make this a longer buffer so the front doesn't have to be trimmed off too often
+	receivedbuffer = receivedbuffer.subarray(n, -1) if n != receivedbuffer.size() else PoolByteArray()
+	return v
 
 func Yreceivedbuffernext2byteWord():
 	var v = yield(YreceivedbuffernextNbytes(2), "completed")
 	return (v[0]<<8) + v[1]
 
+func Yreceivedbuffernextbyte():
+	return yield(YreceivedbuffernextNbytes(1), "completed")[0]
+
+func senddata(data):
+	if socket != null:
+		socket.put_data(data)
+	if websocket != null:
+		print("puttng packet ", Array(data))
+		var E = websocket.put_packet(data)
+		assert (E == 0)
+	
 var in_wait_msg = false
 func _process(delta):
-	#if socket != null and socket.is_connected_to_host():
-	#	var n = socket.get_available_bytes()
-	#	if n != 0:
-	#		receivedbuffer.append_array(socket.get_data(n))
+	if socket != null and socket.is_connected_to_host():
+		var n = socket.get_available_bytes()
+		if n != 0:
+			var sv = socket.get_data(n)
+			assert (sv[0] == 0)  # error code
+			receivedbuffer.append_array(sv[1])
 
-	if websocket != null:
-		websocket.poll()
+	if websocketclient != null:
+		websocketclient.poll()
+		while websocket.get_available_packet_count() != 0:
+			print("Packets ", websocket.get_available_packet_count())
+			receivedbuffer.append_array(websocket.get_packet())
+			print("nnn ", Array(receivedbuffer))
+
 	if in_wait_msg:
-		return
-	if(self.socket == null):
-		return
-	if(!self.socket.is_connected_to_host()):
 		return
 	if receivedbufferlength() <= 0:
 		return
@@ -71,22 +94,22 @@ func _process(delta):
 
 
 func websocketexperiment():
-	websocket = WebSocketClient.new()
+	websocketclient = WebSocketClient.new()
 	var URL = "ws://node-red.dynamicdevices.co.uk:1880/ws/test"
-	var E = websocket.connect_to_url(URL)
+	var E = websocketclient.connect_to_url(URL)
 	print("Err: ", E)
-	print(websocket.get_connected_host())
-	var peer = websocket.get_peer(1)
-	while not peer.is_connected_to_host():
-		websocket.poll()
+	websocket = websocketclient.get_peer(1)
+	while not websocket.is_connected_to_host():
+		websocketclient.poll()
 		print("connecting to host")
 		yield(get_tree().create_timer(0.1), "timeout")
 
-	for i in range(50):
-		var E2 = peer.put_packet(PoolByteArray([100,101,102,103,104,105]))
+	for i in range(5):
+		var E2 = websocket.put_packet(PoolByteArray([100,101,102,103,104,105]))
 		print("Ersr putpacket: ", E2)
-		yield(get_tree().create_timer(0.1), "timeout")
-	
+		yield(get_tree().create_timer(0.5), "timeout")
+
+
 func _ready():
 	if client_id == "":
 		randomize()
@@ -96,17 +119,18 @@ func _ready():
 		websocketexperiment()
 		
 	if get_name() == "test_mqtt":
-		server = "test.mosquitto.org"
 		var metopic = "metest/"
 		set_last_will(metopic+"status", "stopped", true)
-		if yield(connect_to_server(), "completed"):
+		#if yield(connect_to_server(), "completed"):
+		if yield(websocket_connect_to_server(), "completed"):
 			publish(metopic+"status", "connected", true)
 		else:
 			print("mqtt failed to connect")
-		#connect("received_message", self, "received_mqtt")
+		##connect("received_message", self, "received_mqtt")
 		subscribe(metopic+"retain")
 		subscribe(metopic+"time")
 		for i in range(5):
+			print("ii", i)
 			yield(get_tree().create_timer(0.5), "timeout")
 			publish(metopic+"time", "t%d" % i)
 
@@ -115,7 +139,7 @@ func Y_recv_len():
 	var sh = 0
 	var b
 	while 1:
-		b = yield(YreceivedbuffernextNbytes(1), "completed")[0]
+		b = yield(Yreceivedbuffernextbyte(), "completed")
 		n |= (b & 0x7f) << sh
 		if not b & 0x80:
 			return n
@@ -129,38 +153,9 @@ func set_last_will(topic, msg, retain=false, qos=0):
 	self.lw_qos = qos
 	self.lw_retain = retain
 
-func connect_to_server(clean_session=true):
-	var timeout = 30
-	assert (server != "")
-	if client_id == "":
-		client_id = "rr%d" % randi()
-	in_wait_msg = true
-	socket = StreamPeerTCP.new()
-	socket.set_no_delay(true)
-	socket.set_big_endian(true)
-	print("Connecting to %s:%s" % [self.server, self.port])
-	socket.connect_to_host(self.server, self.port)
-#	if self.ssl:
-#		import ussl
-#		self.socket = ussl.wrap_socket(self.socket, **self.ssl_params)
-	
-	var timestep = 0.2
-	while not socket.is_connected_to_host():
-		yield(get_tree().create_timer(timestep), "timeout")
-		timeout -= timestep
-		if timeout < 0:
-			return false
-	while socket.get_status() != StreamPeerTCP.STATUS_CONNECTED:
-		yield(get_tree().create_timer(timestep), "timeout")
-		timeout -= timestep
-		if timeout < 0:
-			return false
-	print("Connected to mqtt broker ", self.server)
-		
-	# May need a little delay after connecting to the server ?
-	
+func firstmessagetoserver():
+	var clean_session = true
 	var msg = PoolByteArray()
-	# Must be an easier way of doing this...
 	msg.append(0x10);
 	msg.append(0x00);
 	msg.append(0x00);
@@ -202,7 +197,25 @@ func connect_to_server(clean_session=true):
 		msg.append(self.pswd.length() >> 8)
 		msg.append(self.pswd.length() & 0xFF)
 		msg.append_array(self.pswd.to_ascii())
-	socket.put_data(msg)
+	return msg
+
+func connect_to_server(clean_session=true):
+	assert (server != "")
+	if client_id == "":
+		client_id = "rr%d" % randi()
+	in_wait_msg = true
+	socket = StreamPeerTCP.new()
+
+	print("Connecting to %s:%s" % [self.server, self.port])
+	socket.connect_to_host(self.server, self.port)
+	while not socket.is_connected_to_host():
+		yield(get_tree().create_timer(0.2), "timeout")
+	while socket.get_status() != StreamPeerTCP.STATUS_CONNECTED:
+		yield(get_tree().create_timer(0.2), "timeout")
+	print("Connected to mqtt broker ", self.server)
+
+	var msg = firstmessagetoserver()
+	senddata(msg)
 	
 	var data = yield(YreceivedbuffernextNbytes(4), "completed")
 	if data == null:
@@ -220,19 +233,86 @@ func connect_to_server(clean_session=true):
 	in_wait_msg = false
 	return true
 
+func websocket_connect_to_server(clean_session=true):
+
+	assert (server != "")
+	if client_id == "":
+		client_id = "rr%d" % randi()
+	in_wait_msg = true
+
+	websocketclient = WebSocketClient.new()
+	#websocketurl = "ws://node-red.dynamicdevices.co.uk:1880/ws/test"
+	var E = websocketclient.connect_to_url(websocketurl, PoolStringArray(["mqttv3.1"])) # , false, PoolStringArray(headers))	
+	#var E = websocketclient.connect_to_url(websocketurl)	
+	
+	print("Err: ", E)
+
+	websocket = websocketclient.get_peer(1)
+	while not websocket.is_connected_to_host():
+		websocketclient.poll()
+		print("connecting to host")
+		yield(get_tree().create_timer(0.1), "timeout")
+
+
+	var msg = firstmessagetoserver()
+
+	yield(get_tree().create_timer(0.5), "timeout")
+	print("Connected to mqtt broker ", self.server)
+
+	
+	#print(Array(msg))
+	#msg = PoolByteArray([16,46,0,4,77,81,84,84,4,38,0,0,0,10,49,54,49,57,53,53,53,52,53,49,0,13,109,101,116,101,115,116,47,115,116,97,116,117,115,0,7,115,116,111,112,112,101,100])
+	#yield(get_tree().create_timer(0.5), "timeout")
+	senddata(msg)
+	#var E1 = websocket.put_packet(msg)
+	#websocketclient.poll()
+	#assert (E1 == 0)
+	
+	#while true:
+	#	websocketclient.poll()
+	#	print("packets available ", websocket.get_available_packet_count())
+	#	if websocket.get_available_packet_count() != 0:
+	#		print(Array(websocket.get_packet()))
+	#	yield(get_tree().create_timer(0.1), "timeout")
+
+	
+	var data = yield(YreceivedbuffernextNbytes(4), "completed")
+	print("dddd ", data)
+	if data == null:
+		socket = null
+		websocket = null
+		websocketclient = null
+		in_wait_msg = false
+		return false
+		
+	assert(data[0] == 0x20 and data[1] == 0x02)
+	if data[3] != 0:
+		print("MQTT exception ", data[3])
+		in_wait_msg = false
+		return false
+
+	#return data[2] & 1
+	in_wait_msg = false
+	return true
+
+
 func disconnect_from_server():
-	self.socket.put_u16(0xE000)
-	self.socket.disconnect_from_host()
+	senddata(PoolByteArray([0xE0, 0x00]))
+	socket.disconnect_from_host()
 
 	
 func ping():
-	self.socket.put_u16(0xC000)
+	senddata(PoolByteArray([0xC0, 0x00]))
 
 func publish(topic, msg, retain=false, qos=0):
 	#print("publishing ", topic, " ", msg)
-	if(self.socket == null):
-		return
-	if(!self.socket.is_connected_to_host()):
+	if socket != null:
+		if not socket.is_connected_to_host():
+			return
+	elif websocket != null:
+		if not websocket.is_connected_to_host():
+			return
+	else:
 		return
 
 	var pkt = PoolByteArray()
@@ -264,13 +344,13 @@ func publish(topic, msg, retain=false, qos=0):
 		pkt.append(self.pid & 0xFF)
 
 	pkt.append_array(msg.to_ascii())
-	self.socket.put_data(pkt)
+	senddata(pkt)
 	
 	if qos == 1:
 		while 1:
 			var op = self.wait_msg()
 			if op == 0x40:
-				sz = yield(YreceivedbuffernextNbytes(1), "completed")[0]
+				sz = yield(Yreceivedbuffernextbyte(), "completed")
 				assert(sz == 0x02)
 				var rcv_pid = yield(Yreceivedbuffernext2byteWord(), "completed")
 				if self.pid == rcv_pid:
@@ -293,7 +373,7 @@ func subscribe(topic, qos=0):
 	msg.append_array(topic.to_ascii())
 	msg.append(qos);
 	
-	self.socket.put_data(msg)
+	senddata(msg)
 	
 	while 0:
 		var op = self.wait_msg()
@@ -313,21 +393,17 @@ func subscribe(topic, qos=0):
 # messages processed internally.
 func wait_msg():
 	yield(get_tree(), "idle_frame") 
-	if(self.socket == null):
-		return
-	if(!self.socket.is_connected_to_host()):
-		return
 	if receivedbufferlength() <= 0:
 		return
 		
-	var res = yield(YreceivedbuffernextNbytes(1), "completed")[0]
+	var res = yield(Yreceivedbuffernextbyte(), "completed")
 
 	if res == null:
 		return null
 	if res == 0:
 		return false # raise OSError(-1)
 	if res == 0xD0:  # PINGRESP
-		var sz = yield(YreceivedbuffernextNbytes(1), "completed")[0]
+		var sz = yield(Yreceivedbuffernextbyte(), "completed")
 		assert(sz == 0)
 		return null
 	var op = res
