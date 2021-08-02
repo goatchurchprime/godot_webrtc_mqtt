@@ -14,9 +14,23 @@ config/name="Godot Webrtc MQTT"
 run/main_scene="res://Control.tscn"
 config/icon="res://icon.png"
 
+[display]
+
+window/size/width=600
+window/size/height=1024
+window/handheld/orientation="portrait"
+
 [gdnative]
 
 singletons=[ "res://webrtc/webrtc.tres" ]
+
+[network]
+
+limits/webrtc/max_channel_in_buffer_kb=128
+limits/websocket_client/max_in_buffer_kb=128
+limits/websocket_client/max_out_buffer_kb=128
+limits/websocket_server/max_in_buffer_kb=128
+limits/websocket_server/max_out_buffer_kb=128
 
 [physics]
 

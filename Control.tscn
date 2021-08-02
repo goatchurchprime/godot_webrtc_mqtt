@@ -17,6 +17,55 @@ __meta__ = {
 [node name="mqttnode" type="Node" parent="."]
 script = ExtResource( 2 )
 
+[node name="mqttbroker" type="Label" parent="."]
+margin_left = 49.5398
+margin_top = 20.3145
+margin_right = 122.54
+margin_bottom = 34.3145
+text = "MQTT host:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LineEdit" type="LineEdit" parent="mqttbroker"]
+margin_left = 90.0
+margin_top = -5.0
+margin_right = 245.0
+margin_bottom = 19.0
+hint_tooltip = "The MQTT broker"
+text = "test.mosquitto.org"
+
+[node name="port" type="LineEdit" parent="mqttbroker"]
+margin_left = 253.94
+margin_top = -6.0
+margin_right = 365.94
+margin_bottom = 18.0
+hint_tooltip = "The MQTT broker"
+text = "8080"
+
+[node name="usewebsocket" type="CheckBox" parent="mqttbroker"]
+margin_left = 372.37
+margin_top = -3.19426
+margin_right = 508.37
+margin_bottom = 20.8057
+pressed = true
+text = "use websockets"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="usessl" type="CheckBox" parent="mqttbroker"]
+margin_left = 301.386
+margin_top = 26.4707
+margin_right = 437.386
+margin_bottom = 50.4707
+hint_tooltip = "Not implemented"
+disabled = true
+text = "use ssl"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [node name="roottopic" type="Label" parent="."]
 margin_left = 55.3657
 margin_top = 56.305
@@ -32,6 +81,7 @@ margin_left = 129.617
 margin_top = -7.31639
 margin_right = 274.617
 margin_bottom = 16.6836
+hint_tooltip = "Unique room number to set the same as your remote friend."
 text = "crumble77"
 
 [node name="mqttconnect" type="Button" parent="."]
@@ -39,33 +89,9 @@ margin_left = 440.466
 margin_top = 88.3283
 margin_right = 544.466
 margin_bottom = 108.328
+hint_tooltip = "Click here when your MQTT settings are correct"
 toggle_mode = true
 text = "MQTT connect"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="mqttbroker" type="Label" parent="."]
-margin_left = 49.5398
-margin_top = 20.3145
-margin_right = 122.54
-margin_bottom = 34.3145
-text = "MQTT host:"
-
-[node name="LineEdit" type="LineEdit" parent="mqttbroker"]
-margin_left = 90.0
-margin_top = -5.0
-margin_right = 245.0
-margin_bottom = 19.0
-text = "test.mosquitto.org"
-
-[node name="usewebsocket" type="CheckBox" parent="mqttbroker"]
-margin_left = 265.364
-margin_top = -5.31319
-margin_right = 401.364
-margin_bottom = 18.6868
-pressed = true
-text = "use websockets"
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -82,12 +108,26 @@ __meta__ = {
 
 [node name="OptionButton" type="OptionButton" parent="local_id"]
 margin_left = 64.6414
-margin_top = -2.48011
+margin_top = -1.42063
 margin_right = 140.641
-margin_bottom = 17.5199
+margin_bottom = 18.5794
+hint_tooltip = "Needs to be different to your remote friend"
 text = "dog111"
-items = [ "dog111", null, false, 0, null, "cat666", null, false, 1, null ]
+items = [ "dog111", null, false, 0, null, "cat222", null, false, 1, null ]
 selected = 0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="hintmessage" type="Label" parent="local_id"]
+margin_left = 127.08
+margin_top = 24.5649
+margin_right = 398.08
+margin_bottom = 38.5649
+text = "^ must be different from friend's local_id !!!"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="remote_id" type="Label" parent="."]
 margin_left = 247.163
@@ -105,14 +145,14 @@ margin_top = -3.32101
 margin_right = 163.618
 margin_bottom = 16.679
 disabled = true
-selected = 0
 
 [node name="msg_pub" type="Label" parent="."]
-margin_left = 34.3636
-margin_top = 138.681
-margin_right = 113.364
-margin_bottom = 178.681
+margin_left = 32.9494
+margin_top = 148.581
+margin_right = 111.95
+margin_bottom = 196.581
 text = "Published
+MQTT
 messages:"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -124,14 +164,16 @@ margin_top = -3.0
 margin_right = 530.0
 margin_bottom = 75.0
 text = "..."
+readonly = true
 show_line_numbers = true
 
 [node name="msg_sub" type="Label" parent="."]
-margin_left = 32.678
+margin_left = 31.1797
 margin_top = 239.318
-margin_right = 111.678
+margin_right = 110.18
 margin_bottom = 279.318
 text = "Subscribed
+MQTT
 messages:"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -143,13 +185,55 @@ margin_top = -4.0
 margin_right = 535.245
 margin_bottom = 69.0
 text = "...."
+readonly = true
 show_line_numbers = true
 
+[node name="MQTTchat" type="Label" parent="."]
+margin_left = 3.05948
+margin_top = 331.216
+margin_right = 80.0595
+margin_bottom = 351.216
+text = "MQTT chat"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="chatmsg" type="LineEdit" parent="MQTTchat"]
+margin_left = 87.1784
+margin_top = -2.94055
+margin_right = 302.178
+margin_bottom = 21.0594
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="chatsend" type="Button" parent="MQTTchat"]
+margin_left = 311.535
+margin_top = -3.05939
+margin_right = 399.535
+margin_bottom = 16.9406
+disabled = true
+text = "MQTT send:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="chatrec" type="LineEdit" parent="MQTTchat"]
+margin_left = 405.416
+margin_top = -6.17841
+margin_right = 575.416
+margin_bottom = 17.8216
+hint_tooltip = "Message from remote friend"
+editable = false
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [node name="ice_candidates" type="Label" parent="."]
-margin_left = 46.1476
-margin_top = 464.933
-margin_right = 137.148
-margin_bottom = 529.933
+margin_left = 11.6865
+margin_top = 545.842
+margin_right = 102.687
+margin_bottom = 610.842
 text = "Internet 
 Connectivity
 Establishment
@@ -159,18 +243,20 @@ __meta__ = {
 }
 
 [node name="TextEdit" type="TextEdit" parent="ice_candidates"]
-margin_left = 99.1022
-margin_top = 0.489807
-margin_right = 628.102
-margin_bottom = 73.4898
+margin_left = 99.0
+margin_right = 568.0
+margin_bottom = 73.0
 text = "...."
 show_line_numbers = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="local_sdp" type="Label" parent="."]
-margin_left = 41.0
-margin_top = 348.0
-margin_right = 259.0
-margin_bottom = 379.0
+margin_left = 12.5322
+margin_top = 424.414
+margin_right = 230.532
+margin_bottom = 455.414
 text = "local Session Description Protocol
 "
 __meta__ = {
@@ -178,18 +264,21 @@ __meta__ = {
 }
 
 [node name="TextEdit" type="TextEdit" parent="local_sdp"]
-margin_left = -4.63263
-margin_top = 24.1225
-margin_right = 285.367
-margin_bottom = 102.122
+margin_left = -5.0
+margin_top = 24.0
+margin_right = 276.0
+margin_bottom = 102.0
 text = "..."
 show_line_numbers = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="remote_sdp" type="Label" parent="."]
-margin_left = 372.126
-margin_top = 343.51
-margin_right = 590.126
-margin_bottom = 374.51
+margin_left = 319.685
+margin_top = 418.425
+margin_right = 554.685
+margin_bottom = 449.425
 text = "remote Session Description Protocol
 "
 __meta__ = {
@@ -198,37 +287,123 @@ __meta__ = {
 
 [node name="TextEdit" type="TextEdit" parent="remote_sdp"]
 margin_left = -8.0
-margin_top = 29.7348
-margin_right = 282.0
-margin_bottom = 107.735
+margin_top = 30.0
+margin_right = 258.0
+margin_bottom = 108.0
 text = "..."
 show_line_numbers = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="webrtcconnect" type="Button" parent="."]
-margin_left = 269.121
-margin_top = 315.949
-margin_right = 388.121
-margin_bottom = 335.949
+margin_left = 11.9977
+margin_top = 395.749
+margin_right = 130.998
+margin_bottom = 415.749
 toggle_mode = true
 text = "WebRTC connect"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="PingButton" type="Button" parent="."]
-margin_left = 44.911
-margin_top = 563.674
-margin_right = 130.911
-margin_bottom = 583.674
-text = "Ping"
+[node name="Label" type="Label" parent="webrtcconnect"]
+margin_left = 140.243
+margin_top = 3.0
+margin_right = 272.243
+margin_bottom = 23.0
+text = "<--- creates the offer"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="recdata" type="LineEdit" parent="PingButton"]
-margin_left = 167.0
-margin_top = -1.0
-margin_right = 506.0
-margin_bottom = 23.0
+[node name="WebRTCchat" type="Label" parent="."]
+margin_left = 13.3484
+margin_top = 658.076
+margin_right = 100.348
+margin_bottom = 672.076
+text = "WebRTC chat:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
-[connection signal="pressed" from="PingButton" to="." method="_on_PingButton_pressed"]
+[node name="chatmsg" type="LineEdit" parent="WebRTCchat"]
+margin_left = 94.0
+margin_top = -2.0
+margin_right = 262.0
+margin_bottom = 22.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="chatsend" type="Button" parent="WebRTCchat"]
+margin_left = 268.749
+margin_top = 1.7804
+margin_right = 367.749
+margin_bottom = 21.7804
+disabled = true
+text = "WebRTC send"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="chatrec" type="LineEdit" parent="WebRTCchat"]
+margin_left = 388.0
+margin_top = 1.0
+margin_right = 556.0
+margin_bottom = 25.0
+hint_tooltip = "message from remote friend"
+editable = false
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="testlatency" type="Label" parent="."]
+margin_left = 11.3484
+margin_top = 696.076
+margin_right = 92.3484
+margin_bottom = 710.076
+text = "Test latency:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="testsize" type="OptionButton" parent="testlatency"]
+margin_left = 92.0
+margin_top = -1.0
+margin_right = 148.0
+margin_bottom = 19.0
+text = "1 kb"
+items = [ "1 kb", null, false, 0, null, "10 kb", null, false, 1, null, "100 kb", null, false, 2, null ]
+selected = 0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="testwebrtc" type="Button" parent="testlatency"]
+margin_left = 163.0
+margin_top = -3.0
+margin_right = 245.0
+margin_bottom = 17.0
+disabled = true
+text = "by webrtc"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="testwebsocket" type="Button" parent="testlatency"]
+margin_left = 258.352
+margin_top = -1.94055
+margin_right = 357.352
+margin_bottom = 18.0594
+disabled = true
+text = "by websocket"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="latencyreport" type="LineEdit" parent="testlatency"]
+margin_left = 372.611
+margin_top = -3.88104
+margin_right = 562.611
+margin_bottom = 20.119

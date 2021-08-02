@@ -15,6 +15,7 @@ var websocketurl = "ws://test.mosquitto.org:8080/mqtt"
 #var websocketurl = "ws://echo.websocket.org"
 	
 var socket = null
+var sslsocket = null
 var websocketclient = null
 var websocket = null
 
@@ -62,8 +63,10 @@ func Yreceivedbuffernextbyte():
 func senddata(data):
 	if socket != null:
 		socket.put_data(data)
-	if websocket != null:
-		print("puttng packet ", Array(data))
+	elif sslsocket != null:
+		sslsocket.put_data(data)
+	elif websocket != null:
+		#print("putting packet ", Array(data))
 		var E = websocket.put_packet(data)
 		assert (E == 0)
 	
@@ -75,13 +78,22 @@ func _process(delta):
 			var sv = socket.get_data(n)
 			assert (sv[0] == 0)  # error code
 			receivedbuffer.append_array(sv[1])
+			
+	elif sslsocket != null:
+		if sslsocket.status == StreamPeerSSL.STATUS_CONNECTED or sslsocket.status == StreamPeerSSL.STATUS_HANDSHAKING:
+			sslsocket.poll()
+			var n = sslsocket.get_available_bytes()
+			if n != 0:
+				var sv = sslsocket.get_data(n)
+				assert (sv[0] == 0)  # error code
+				receivedbuffer.append_array(sv[1])
 
-	if websocketclient != null:
+	elif websocketclient != null:
 		websocketclient.poll()
 		while websocket.get_available_packet_count() != 0:
 			print("Packets ", websocket.get_available_packet_count())
 			receivedbuffer.append_array(websocket.get_packet())
-			print("nnn ", Array(receivedbuffer))
+			#print("nnn ", Array(receivedbuffer))
 
 	if in_wait_msg:
 		return
@@ -200,19 +212,25 @@ func firstmessagetoserver():
 		msg.append_array(self.pswd.to_ascii())
 	return msg
 
-func connect_to_server(clean_session=true):
+func connect_to_server(usessl=false):
 	assert (server != "")
 	if client_id == "":
 		client_id = "rr%d" % randi()
 	in_wait_msg = true
-	socket = StreamPeerTCP.new()
 
+	socket = StreamPeerTCP.new()
 	print("Connecting to %s:%s" % [self.server, self.port])
 	socket.connect_to_host(self.server, self.port)
 	while not socket.is_connected_to_host():
 		yield(get_tree().create_timer(0.2), "timeout")
 	while socket.get_status() != StreamPeerTCP.STATUS_CONNECTED:
 		yield(get_tree().create_timer(0.2), "timeout")
+
+	if usessl:
+		sslsocket = StreamPeerSSL.new()
+		var E3 = sslsocket.connect_to_stream(socket) 
+		print("EE3 ", E3)
+		
 	print("Connected to mqtt broker ", self.server)
 
 	var msg = firstmessagetoserver()
@@ -234,8 +252,7 @@ func connect_to_server(clean_session=true):
 	in_wait_msg = false
 	return true
 
-func websocket_connect_to_server(clean_session=true):
-
+func websocket_connect_to_server():
 	assert (server != "")
 	if client_id == "":
 		client_id = "rr%d" % randi()
@@ -432,7 +449,7 @@ func wait_msg():
 	var msg = data.get_string_from_ascii()
 	
 	emit_signal("received_message", topic, msg)
-	print("Received message", [topic, msg])
+	print("Received message", [topic, msg.substr(0, 100)])
 	
 #	self.cb(topic, msg)
 	if op & 6 == 2:
