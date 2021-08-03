@@ -55,7 +55,7 @@ func _ready():
 	$MQTTchat/chatsend.connect("pressed", self, "mqttchatsend")
 	$WebRTCchat/chatsend.connect("pressed", self, "webrtcchatsend")
 	$testlatency/testwebrtc.connect("pressed", self, "testlatency", ["webrtc"])
-	$testlatency/testwebsocket.connect("pressed", self, "testlatency", ["websocket"])
+	$testlatency/testmqtt.connect("pressed", self, "testlatency", ["mqtt"])
 	
 	syncremoteid(0)
 	updatemqttport()
@@ -97,9 +97,9 @@ func webrtcchatsend():
 	if $WebRTCchat/chatmsg.text == "" or $WebRTCchat/chatmsg.text == "webrtc-message #%d from %s"%[wmsgn, my_partialtopic]:
 		wmsgn += 1
 		$WebRTCchat/chatmsg.text = "webrtc-message #%d from %s"%[wmsgn, my_partialtopic]
-		var E = datachannel.put_packet($WebRTCchat/chatmsg.text.to_utf8())
-		if E != 0:
-			$WebRTCchat/chatrec.text = "put_packet error: %d" % E
+	var E = datachannel.put_packet($WebRTCchat/chatmsg.text.to_utf8())
+	if E != 0:
+		$WebRTCchat/chatrec.text = "put_packet error: %d" % E
 
 var t0startlatency = 0
 func testlatency(protocol):
@@ -115,7 +115,7 @@ func testlatency(protocol):
 		var E = datachannel.put_packet(testbytes)
 		if E != 0:
 			$WebRTCchat/chatrec.text = "put_packet error: %d" % E
-	elif protocol == "websocket":
+	elif protocol == "mqtt":
 		$mqttnode.publish(otherguytopic+"chat", testbytes.get_string_from_ascii())
 
 
@@ -232,7 +232,7 @@ func received_mqtt(topic, msg):
 				otherguystatus = msg
 			var mqttbothwaysgood = (my_mqttstatus == "connected") and (otherguystatus == "connected")
 			$MQTTchat/chatsend.disabled = not mqttbothwaysgood
-			$testlatency/testwebsocket.disabled = not mqttbothwaysgood
+			$testlatency/testmqtt.disabled = not mqttbothwaysgood
 		elif stopic[2] == "chat":
 			if msg[0] == "$":
 				$mqttnode.publish(otherguytopic+"chat", "*%d" % len(msg))

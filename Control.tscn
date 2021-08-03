@@ -234,7 +234,7 @@ margin_left = 11.6865
 margin_top = 545.842
 margin_right = 102.687
 margin_bottom = 610.842
-text = "Internet 
+text = "Interactive 
 Connectivity
 Establishment
    candidates:"
@@ -391,13 +391,13 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="testwebsocket" type="Button" parent="testlatency"]
+[node name="testmqtt" type="Button" parent="testlatency"]
 margin_left = 258.352
 margin_top = -1.94055
 margin_right = 357.352
 margin_bottom = 18.0594
 disabled = true
-text = "by websocket"
+text = "by mqtt"
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -407,3 +407,13 @@ margin_left = 372.611
 margin_top = -3.88104
 margin_right = 562.611
 margin_bottom = 20.119
+
+[node name="credits" type="Label" parent="."]
+margin_left = 33.5084
+margin_top = 724.492
+margin_right = 308.508
+margin_bottom = 738.492
+text = "code at: https://github.com/goatchurchprime/godot_webrtc_mqtt"
+__meta__ = {
+"_edit_use_anchors_": false
+}
